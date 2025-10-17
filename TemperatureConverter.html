@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Temperature Converter</title>
+  <style>
+    * {
+      font-family: "Poppins", sans-serif;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #74ebd5, #9face6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      transition: background 0.5s ease;
+    }
+
+    body.dark {
+      background: linear-gradient(135deg, #232526, #414345);
+      color: #eee;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 380px;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark .container {
+      background: #2d2d2d;
+      color: #fff;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      background: linear-gradient(90deg, #5a67d8, #6b46c1);
+    }
+
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #222;
+    }
+
+    body.dark #result {
+      color: #eee;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 13px;
+    }
+
+    .toggle-mode {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: 0.3s;
+    }
+
+    body.dark .toggle-mode {
+      background: #333;
+      color: #fff;
+    }
+
+    #history {
+      margin-top: 20px;
+      text-align: left;
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: #333;
+    }
+
+    body.dark #history {
+      color: #ccc;
+    }
+
+    .history-item {
+      padding: 5px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .reset-btn {
+      background: #ff6b6b;
+      margin-top: 5px;
+    }
+
+    .reset-btn:hover {
+      background: #e63946;
+    }
+  </style>
+</head>
+<body>
+  <button class="toggle-mode" onclick="toggleMode()">🌙</button>
+  <div class="container">
+    <h2>🌡️ Advanced Temperature Converter</h2>
+
+    <input type="text" id="temperature" placeholder="Enter temperature (e.g., 32C, 100F, 300K)" oninput="autoConvert()" />
+    
+    <select id="unit">
+      <option value="C">Celsius</option>
+      <option value="F">Fahrenheit</option>
+      <option value="K">Kelvin</option>
+    </select>
+
+    <button onclick="convertTemperature()">Convert</button>
+    <button class="reset-btn" onclick="resetFields()">Reset</button>
+
+    <div id="result"></div>
+
+    <div id="history"></div>
+
+    <div class="footer">
+     
+    </div>
+  </div>
+
+  <script>
+    let historyList = [];
+
+    function autoConvert() {
+      const value = document.getElementById("temperature").value.trim();
+      if (value.match(/^\d+(\.\d+)?[CFKcfk]$/)) {
+        const unit = value.slice(-1).toUpperCase();
+        const num = parseFloat(value);
+        document.getElementById("unit").value = unit;
+        document.getElementById("temperature").value = num;
+        convertTemperature();
+      }
+    }
+
+    function convertTemperature() {
+      const temp = document.getElementById("temperature").value;
+      const unit = document.getElementById("unit").value;
+      const resultDiv = document.getElementById("result");
+
+      if (temp === "" || isNaN(temp)) {
+        resultDiv.textContent = "⚠️ Please enter a valid number!";
+        resultDiv.style.color = "red";
+        return;
+      }
+
+      const temperature = parseFloat(temp);
+      let celsius, fahrenheit, kelvin, output = "";
+
+      if (unit === "C") {
+        fahrenheit = (temperature * 9) / 5 + 32;
+        kelvin = temperature + 273.15;
+        output = `${temperature}°C = ${fahrenheit.toFixed(2)}°F | ${kelvin.toFixed(2)}K`;
+      } else if (unit === "F") {
+        celsius = ((temperature - 32) * 5) / 9;
+        kelvin = celsius + 273.15;
+        output = `${temperature}°F = ${celsius.toFixed(2)}°C | ${kelvin.toFixed(2)}K`;
+      } else if (unit === "K") {
+        celsius = temperature - 273.15;
+        fahrenheit = (celsius * 9) / 5 + 32;
+        output = `${temperature}K = ${celsius.toFixed(2)}°C | ${fahrenheit.toFixed(2)}°F`;
+      }
+
+      resultDiv.textContent = output;
+      resultDiv.style.color = "#222";
+      addToHistory(output);
+    }
+
+    function resetFields() {
+      document.getElementById("temperature").value = "";
+      document.getElementById("result").textContent = "";
+      document.getElementById("history").innerHTML = "";
+      historyList = [];
+    }
+
+    function addToHistory(entry) {
+      historyList.unshift(entry);
+      const historyDiv = document.getElementById("history");
+      historyDiv.innerHTML = historyList
+        .map(item => `<div class="history-item">${item}</div>`)
+        .join("");
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle("dark");
+      const btn = document.querySelector(".toggle-mode");
+      btn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    }
+  </script>
+</body>
+</html>
